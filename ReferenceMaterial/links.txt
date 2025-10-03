@@ -1,0 +1,6 @@
+https://en.wikipedia.org/wiki/Parsing#Parser
+https://en.wikipedia.org/wiki/Shunting_yard_algorithm
+https://en.wikipedia.org/wiki/LaTeX
+https://docs.sympy.org/latest/modules/integrals/integrals.html
+https://pypi.org/project/latex2sympy2/
+https://www.manim.community/
