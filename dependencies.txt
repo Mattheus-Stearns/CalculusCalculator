@@ -1,6 +1,0 @@
-sympy
-latex2sympy2
-manim
-argparse
-itertools
-sys
