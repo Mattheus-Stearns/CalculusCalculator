@@ -1,5 +1,5 @@
-from sympy import sin, cos, tan, exp, log, integrate, latex
-from sympy.integrals.manualintegrate import manualintegrate, integral_steps, PartsRule
+from sympy import sin, cos, tan, exp, log, integrate
+from sympy.integrals.manualintegrate import manualintegrate, integral_steps
 from latex2sympy2 import latex2sympy, latex2latex
 import manim
 import argparse
@@ -18,35 +18,6 @@ def readExpressions(file_path: str, numExpressions: int) -> tuple[bool, list[str
     except Exception as e:
         return False, f"An error occurred: {e}"
 
-def extract_steps(rule, steps=None): # There are still errors here!
-    """
-    Recursively extracts step-by-step LaTeX strings from a SymPy Rule object.
-    
-    Returns a list of LaTeX strings ready for rendering.
-    """
-    if steps is None:
-        steps = []
-
-    # Show explanation for composite rules
-    if isinstance(rule, PartsRule):
-        steps.append("Integration by parts:")
-
-    # Add the main integrand / expression
-    if hasattr(rule, 'integrand'):
-        steps.append(latex(rule.integrand))
-
-    # Recursively process substeps, substep, alternatives, v_step, second_step
-    for attr in ['substep', 'substeps', 'alternatives', 'v_step', 'second_step']:
-        if hasattr(rule, attr):
-            sub = getattr(rule, attr)
-            if isinstance(sub, list):
-                for s in sub:
-                    extract_steps(s, steps)
-            elif sub is not None:
-                extract_steps(sub, steps)
-
-    return steps
-
 def solveExpression(expression: str) -> list[str]:
     tex = expression
     if r"\int" in tex:
@@ -56,12 +27,9 @@ def solveExpression(expression: str) -> list[str]:
     else:
         operation = "evaluate"
     sympy = latex2sympy(tex)
-    result = []
     if operation == "integrate":
-        rule = integral_steps(sympy.function, sympy.variables[0])
-        result = extract_steps(rule)
-    for step in result:
-        print(step)
+        result = integral_steps(sympy.function, sympy.variables[0])
+    print(result)
     return result
 
 def renderExpressions(renderArray: list[list[str]]):
