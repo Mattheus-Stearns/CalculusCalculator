@@ -1,5 +1,23 @@
-from sympy import sin, cos, tan, exp, log, integrate
-from sympy.integrals.manualintegrate import manualintegrate, integral_steps
+# DEV: source "/Users/mattheuspieterstearns/Desktop/Desktop Folder/Coding/CalculusCalculator/.venv/bin/activate"
+from sympy import sin, cos, tan, exp, log, integrate, diff
+from sympy.integrals.manualintegrate import (
+    PartsRule,
+    ConstantRule,
+    AddRule,
+    PowerRule,
+    ExpRule,
+    TrigRule,
+    SinRule,
+    CosRule,
+    ArctanRule,
+    RewriteRule,
+    AlternativeRule,
+    manualintegrate,
+    URule,
+    ConstantTimesRule,
+    integral_steps
+)
+from sympy.printing.latex import latex
 from latex2sympy2 import latex2sympy, latex2latex
 import manim
 import argparse
@@ -18,6 +36,27 @@ def readExpressions(file_path: str, numExpressions: int) -> tuple[bool, list[str
     except Exception as e:
         return False, f"An error occurred: {e}"
 
+def extractSteps(step) -> list[str]:
+    steps = []
+    if isinstance(step, PartsRule):
+        steps.append("Integration by parts:")
+        steps.append(f"{step.integrand} by {step.variable}")
+        steps.append(f"u: {step.u}")
+        steps.append(f"dv: {step.dv}")
+        steps.append(f"du: {diff(step.u, step.variable)}")
+        steps.append(f"v: {integrate(step.v_step.integrand, step.variable)}")
+        steps.append(f"I: {step.second_step.integrand} by {step.second_step.variable}")
+    elif isinstance(step, ArctanRule):
+        steps.append("Arctan rule:")
+        steps.append(f"{step.integrand} by {step.variable}")
+        steps.append(r"\int{\frac{1}{ax^2 + bx + c}}{dx}=\frac{2}{\sqrt{4ac-b^2}}\arctan(\frac{2ax+b}{\sqrt{4ac-b^2}})+C")
+        steps.append(f"where a = {step.a}, b = {step.b}, and c = {step.c}")
+        steps.append(f"{integrate(step.integrand, step.variable)}")
+    else:
+        steps.append("")
+    return steps
+
+
 def solveExpression(expression: str) -> list[str]:
     tex = expression
     if r"\int" in tex:
@@ -28,7 +67,9 @@ def solveExpression(expression: str) -> list[str]:
         operation = "evaluate"
     sympy = latex2sympy(tex)
     if operation == "integrate":
-        result = integral_steps(sympy.function, sympy.variables[0])
+        steps = integral_steps(sympy.function, sympy.variables[0])
+        result = extractSteps(steps)
+    print(steps)
     print(result)
     return result
 
