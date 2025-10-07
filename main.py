@@ -36,25 +36,69 @@ def readExpressions(file_path: str, numExpressions: int) -> tuple[bool, list[str
     except Exception as e:
         return False, f"An error occurred: {e}"
 
-def extractSteps(step) -> list[str]:
-    steps = []
-    if isinstance(step, PartsRule):
-        steps.append("Integration by parts:")
-        steps.append(f"{step.integrand} by {step.variable}")
-        steps.append(f"u: {step.u}")
-        steps.append(f"dv: {step.dv}")
-        steps.append(f"du: {diff(step.u, step.variable)}")
-        steps.append(f"v: {integrate(step.v_step.integrand, step.variable)}")
-        steps.append(f"I: {step.second_step.integrand} by {step.second_step.variable}")
-    elif isinstance(step, ArctanRule):
-        steps.append("Arctan rule:")
-        steps.append(f"{step.integrand} by {step.variable}")
-        steps.append(r"\int{\frac{1}{ax^2 + bx + c}}{dx}=\frac{2}{\sqrt{4ac-b^2}}\arctan(\frac{2ax+b}{\sqrt{4ac-b^2}})+C")
-        steps.append(f"where a = {step.a}, b = {step.b}, and c = {step.c}")
-        steps.append(f"{integrate(step.integrand, step.variable)}")
+def rule_to_latex(rule):
+    """Recursively converts a SymPy manualintegrate rule into human-readable LaTeX."""
+    if isinstance(rule, PartsRule):
+        # Integration by parts
+        u = latex(rule.u)
+        dv = latex(rule.dv)
+        v_expr = latex(rule.v_step.integrand)
+        step_latex = (
+            f"\\text{{Integration by parts: }} "
+            f"\\int {latex(rule.integrand)} \\, d{latex(rule.variable)} = "
+            f"{u} \\cdot ({v_expr}) - \\int ({v_expr}) \\, d({u})"
+        )
+        sub = rule_to_latex(rule.second_step) if rule.second_step else ""
+        return step_latex + (" \\\\ " + sub if sub else "")
+
+    elif isinstance(rule, URule):
+        return (
+            f"\\text{{Substitute }} u = {latex(rule.u_func)}, "
+            f"\\text{{ then }} du = d({latex(rule.u_func)})"
+            + (" \\\\ " + rule_to_latex(rule.substep) if rule.substep else "")
+        )
+
+    elif isinstance(rule, ConstantTimesRule):
+        return (
+            f"\\text{{Constant multiple rule: }} "
+            f"\\int {latex(rule.constant)}({latex(rule.other)}) \\, d{latex(rule.variable)} = "
+            f"{latex(rule.constant)} \\int {latex(rule.other)} \\, d{latex(rule.variable)}"
+            + (" \\\\ " + rule_to_latex(rule.substep) if rule.substep else "")
+        )
+
+    elif isinstance(rule, PowerRule):
+        return (
+            f"\\text{{Power rule: }} "
+            f"\\int {latex(rule.base)}^{latex(rule.exp)} \\, d{latex(rule.variable)} = "
+            f"\\frac{{{latex(rule.base)}^{{{latex(rule.exp + 1)}}}}}{{{latex(rule.exp + 1)}}} + C"
+        )
+
+    elif isinstance(rule, AddRule):
+        substeps = [rule_to_latex(s) for s in rule.substeps]
+        return (
+            f"\\text{{Sum rule: }} \\int ({latex(rule.integrand)}) \\, d{latex(rule.variable)} = "
+            + " + ".join(substeps)
+        )
+
+    elif isinstance(rule, AlternativeRule):
+        subs = [rule_to_latex(s) for s in rule.alternatives]
+        return "\\text{Alternative methods: } " + " \\text{ or } ".join(subs)
+
+    elif isinstance(rule, RewriteRule):
+        return (
+            f"\\text{{Rewrite }} {latex(rule.integrand)} = {latex(rule.rewritten)}"
+            + (" \\\\ " + rule_to_latex(rule.substep) if rule.substep else "")
+        )
+
+    elif isinstance(rule, (SinRule, CosRule, ExpRule, ArctanRule)):
+        return (
+            f"\\text{{Direct integration: }} "
+            f"\\int {latex(rule.integrand)} \\, d{latex(rule.variable)}"
+        )
+
     else:
-        steps.append("")
-    return steps
+        # Fallback
+        return f"\\text{{Unhandled rule: }} {latex(rule.integrand)}"
 
 
 def solveExpression(expression: str) -> list[str]:
@@ -68,7 +112,7 @@ def solveExpression(expression: str) -> list[str]:
     sympy = latex2sympy(tex)
     if operation == "integrate":
         steps = integral_steps(sympy.function, sympy.variables[0])
-        result = extractSteps(steps)
+        result = rule_to_latex(steps)
     print(steps)
     print(result)
     return result
