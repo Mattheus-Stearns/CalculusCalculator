@@ -36,47 +36,56 @@ def readExpressions(file_path: str, numExpressions: int) -> tuple[bool, list[str
     except Exception as e:
         return False, f"An error occurred: {e}"
 
+def prettyLatex(expr):
+    s = latex(expr)
+    s = s.replace(r"\operatorname{asin}", r"\sin^{-1}")
+    s = s.replace(r"\operatorname{acos}", r"\cos^{-1}")
+    s = s.replace(r"\operatorname{atan}", r"\tan^{-1}")
+    s = s.replace(r"\operatorname{acot}", r"\cot^{-1}")
+    s = s.replace(r"\operatorname{asec}", r"\sec^{-1}")
+    s = s.replace(r"\operatorname{acsc}", r"\csc^{-1}")
+    return s
+
 def rule_to_latex(rule):
     """Recursively converts a SymPy manualintegrate rule into human-readable LaTeX."""
     if isinstance(rule, PartsRule):
         # Integration by parts
-        u = latex(rule.u)
-        dv = latex(rule.dv)
-        v_expr = latex(rule.v_step.integrand)
+        u = prettyLatex(rule.u)
+        dv = prettyLatex(rule.dv)
+        v_expr = prettyLatex(rule.v_step.integrand)
         step_latex = (
-            f"\\text{{Integration by parts: }} "
-            f"\\int {latex(rule.integrand)} \\, d{latex(rule.variable)} = "
-            f"{u} \\cdot ({v_expr}) - \\int ({v_expr}) \\, d({u})"
+            rf"\int{prettyLatex(rule.integrand)}d{prettyLatex(rule.variable)}" + "\n"
+            rf"{u}{v_expr} - \int({v_expr})d({u})"
         )
         sub = rule_to_latex(rule.second_step) if rule.second_step else ""
-        return step_latex + (" \\\\ " + sub if sub else "")
+        return step_latex + ("\n" + sub if sub else "")
 
     elif isinstance(rule, URule):
         return (
-            f"\\text{{Substitute }} u = {latex(rule.u_func)}, "
-            f"\\text{{ then }} du = d({latex(rule.u_func)})"
+            f"\\text{{Substitute }} u = {prettyLatex(rule.u_func)}, "
+            f"\\text{{ then }} du = d({prettyLatex(rule.u_func)})"
             + (" \\\\ " + rule_to_latex(rule.substep) if rule.substep else "")
         )
 
     elif isinstance(rule, ConstantTimesRule):
         return (
             f"\\text{{Constant multiple rule: }} "
-            f"\\int {latex(rule.constant)}({latex(rule.other)}) \\, d{latex(rule.variable)} = "
-            f"{latex(rule.constant)} \\int {latex(rule.other)} \\, d{latex(rule.variable)}"
+            f"\\int {prettyLatex(rule.constant)}({prettyLatex(rule.other)}) \\, d{prettyLatex(rule.variable)} = "
+            f"{prettyLatex(rule.constant)} \\int {prettyLatex(rule.other)} \\, d{prettyLatex(rule.variable)}"
             + (" \\\\ " + rule_to_latex(rule.substep) if rule.substep else "")
         )
 
     elif isinstance(rule, PowerRule):
         return (
             f"\\text{{Power rule: }} "
-            f"\\int {latex(rule.base)}^{latex(rule.exp)} \\, d{latex(rule.variable)} = "
-            f"\\frac{{{latex(rule.base)}^{{{latex(rule.exp + 1)}}}}}{{{latex(rule.exp + 1)}}} + C"
+            f"\\int {prettyLatex(rule.base)}^{prettyLatex(rule.exp)} \\, d{prettyLatex(rule.variable)} = "
+            f"\\frac{{{prettyLatex(rule.base)}^{{{prettyLatex(rule.exp + 1)}}}}}{{{prettyLatex(rule.exp + 1)}}} + C"
         )
 
     elif isinstance(rule, AddRule):
         substeps = [rule_to_latex(s) for s in rule.substeps]
         return (
-            f"\\text{{Sum rule: }} \\int ({latex(rule.integrand)}) \\, d{latex(rule.variable)} = "
+            f"\\text{{Sum rule: }} \\int ({prettyLatex(rule.integrand)}) \\, d{prettyLatex(rule.variable)} = "
             + " + ".join(substeps)
         )
 
@@ -86,19 +95,24 @@ def rule_to_latex(rule):
 
     elif isinstance(rule, RewriteRule):
         return (
-            f"\\text{{Rewrite }} {latex(rule.integrand)} = {latex(rule.rewritten)}"
+            f"\\text{{Rewrite }} {prettyLatex(rule.integrand)} = {prettyLatex(rule.rewritten)}"
             + (" \\\\ " + rule_to_latex(rule.substep) if rule.substep else "")
         )
 
-    elif isinstance(rule, (SinRule, CosRule, ExpRule, ArctanRule)):
+    elif isinstance(rule, (SinRule, CosRule, ExpRule)):
         return (
-            f"\\text{{Direct integration: }} "
-            f"\\int {latex(rule.integrand)} \\, d{latex(rule.variable)}"
+            rf"{prettyLatex(rule.integrand)}"
+        )
+
+    elif isinstance(rule, ArctanRule):
+        return (
+            rf"\int{prettyLatex(rule.integrand)}d{prettyLatex(rule.variable)}" + "\n"
+            rf"{prettyLatex(integrate(rule.integrand, rule.variable))}"
         )
 
     else:
         # Fallback
-        return f"\\text{{Unhandled rule: }} {latex(rule.integrand)}"
+        return f"\\text{{Unhandled rule: }} {prettyLatex(rule.integrand)}"
 
 
 def solveExpression(expression: str) -> list[str]:
@@ -113,7 +127,6 @@ def solveExpression(expression: str) -> list[str]:
     if operation == "integrate":
         steps = integral_steps(sympy.function, sympy.variables[0])
         result = rule_to_latex(steps)
-    print(steps)
     print(result)
     return result
 
