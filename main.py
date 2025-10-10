@@ -1,4 +1,4 @@
-# DEV: source "/Users/mattheuspieterstearns/Desktop/Desktop Folder/Coding/CalculusCalculator/.venv/bin/activate"
+# DEV: source "/Users/mattheusstearns/Desktop/Desktop Folder/Coding/CalculusCalculator/.venv/bin/activate"
 from sympy import sin, cos, tan, exp, log, integrate, diff
 from sympy.integrals.manualintegrate import (
     PartsRule,
@@ -19,108 +19,128 @@ from sympy.integrals.manualintegrate import (
 )
 from sympy.printing.latex import latex
 from latex2sympy2 import latex2sympy, latex2latex
-import manim
+from manim import MathTex, Write, FadeOut, Scene
 import argparse
 from itertools import islice
 import sys
+import os
 
-def readExpressions(file_path: str, numExpressions: int) -> tuple[bool, list[str] | str]:
-    arrayLines = []
-    try:
-        with open(file_path, 'r') as file:
-            for line in islice(file, numExpressions):
-                arrayLines.append(line.strip())
-        return True, arrayLines
-    except FileNotFoundError:
-        return False, f"Error: The file '{file_path}' was not found."
-    except Exception as e:
-        return False, f"An error occurred: {e}"
+class renderScene(Scene):
 
-def rule_to_latex(rule):
-    """Recursively converts a SymPy manualintegrate rule into human-readable LaTeX."""
-    if isinstance(rule, PartsRule):
-        # Integration by parts
-        u = latex(rule.u)
-        dv = latex(rule.dv)
-        v_expr = latex(rule.v_step.integrand)
-        step_latex = (
-            f"\\text{{Integration by parts: }} "
-            f"\\int {latex(rule.integrand)} \\, d{latex(rule.variable)} = "
-            f"{u} \\cdot ({v_expr}) - \\int ({v_expr}) \\, d({u})"
-        )
-        sub = rule_to_latex(rule.second_step) if rule.second_step else ""
-        return step_latex + (" \\\\ " + sub if sub else "")
+    def readExpressions(self, file_path: str, numExpressions: int) -> tuple[bool, list[str] | str]:
+        arrayLines = []
+        try:
+            with open(file_path, 'r') as file:
+                for line in islice(file, numExpressions):
+                    arrayLines.append(line.strip())
+            return True, arrayLines
+        except FileNotFoundError:
+            return False, f"Error: The file '{file_path}' was not found."
+        except Exception as e:
+            return False, f"An error occurred: {e}"
 
-    elif isinstance(rule, URule):
-        return (
-            f"\\text{{Substitute }} u = {latex(rule.u_func)}, "
-            f"\\text{{ then }} du = d({latex(rule.u_func)})"
-            + (" \\\\ " + rule_to_latex(rule.substep) if rule.substep else "")
-        )
+    def rule_to_latex(self, rule):
+        """Recursively converts a SymPy manualintegrate rule into human-readable LaTeX."""
+        renderSceneInstance = renderScene()
+        if isinstance(rule, PartsRule):
+            # Integration by parts
+            u = latex(rule.u)
+            dv = latex(rule.dv)
+            v_expr = latex(rule.v_step.integrand)
+            step_latex = (
+                f"\\text{{Integration by parts: }} "
+                f"\\int {latex(rule.integrand)} \\, d{latex(rule.variable)} = "
+                f"{u} \\cdot ({v_expr}) - \\int ({v_expr}) \\, d({u})"
+            )
+            sub = renderSceneInstance.rule_to_latex(rule.second_step) if rule.second_step else ""
+            return step_latex + (" \\\\ " + sub if sub else "")
 
-    elif isinstance(rule, ConstantTimesRule):
-        return (
-            f"\\text{{Constant multiple rule: }} "
-            f"\\int {latex(rule.constant)}({latex(rule.other)}) \\, d{latex(rule.variable)} = "
-            f"{latex(rule.constant)} \\int {latex(rule.other)} \\, d{latex(rule.variable)}"
-            + (" \\\\ " + rule_to_latex(rule.substep) if rule.substep else "")
-        )
+        elif isinstance(rule, URule):
+            return (
+                f"\\text{{Substitute }} u = {latex(rule.u_func)}, "
+                f"\\text{{ then }} du = d({latex(rule.u_func)})"
+                + (" \\\\ " + renderSceneInstance.rule_to_latex(rule.substep) if rule.substep else "")
+            )
 
-    elif isinstance(rule, PowerRule):
-        return (
-            f"\\text{{Power rule: }} "
-            f"\\int {latex(rule.base)}^{latex(rule.exp)} \\, d{latex(rule.variable)} = "
-            f"\\frac{{{latex(rule.base)}^{{{latex(rule.exp + 1)}}}}}{{{latex(rule.exp + 1)}}} + C"
-        )
+        elif isinstance(rule, ConstantTimesRule):
+            return (
+                f"\\text{{Constant multiple rule: }} "
+                f"\\int {latex(rule.constant)}({latex(rule.other)}) \\, d{latex(rule.variable)} = "
+                f"{latex(rule.constant)} \\int {latex(rule.other)} \\, d{latex(rule.variable)}"
+                + (" \\\\ " + renderSceneInstance.rule_to_latex(rule.substep) if rule.substep else "")
+            )
 
-    elif isinstance(rule, AddRule):
-        substeps = [rule_to_latex(s) for s in rule.substeps]
-        return (
-            f"\\text{{Sum rule: }} \\int ({latex(rule.integrand)}) \\, d{latex(rule.variable)} = "
-            + " + ".join(substeps)
-        )
+        elif isinstance(rule, PowerRule):
+            return (
+                f"\\text{{Power rule: }} "
+                f"\\int {latex(rule.base)}^{latex(rule.exp)} \\, d{latex(rule.variable)} = "
+                f"\\frac{{{latex(rule.base)}^{{{latex(rule.exp + 1)}}}}}{{{latex(rule.exp + 1)}}} + C"
+            )
 
-    elif isinstance(rule, AlternativeRule):
-        subs = [rule_to_latex(s) for s in rule.alternatives]
-        return "\\text{Alternative methods: } " + " \\text{ or } ".join(subs)
+        elif isinstance(rule, AddRule):
+            substeps = [renderSceneInstance.rule_to_latex(s) for s in rule.substeps]
+            return (
+                f"\\text{{Sum rule: }} \\int ({latex(rule.integrand)}) \\, d{latex(rule.variable)} = "
+                + " + ".join(substeps)
+            )
 
-    elif isinstance(rule, RewriteRule):
-        return (
-            f"\\text{{Rewrite }} {latex(rule.integrand)} = {latex(rule.rewritten)}"
-            + (" \\\\ " + rule_to_latex(rule.substep) if rule.substep else "")
-        )
+        elif isinstance(rule, AlternativeRule):
+            subs = [renderSceneInstance.rule_to_latex(s) for s in rule.alternatives]
+            return "\\text{Alternative methods: } " + " \\text{ or } ".join(subs)
 
-    elif isinstance(rule, (SinRule, CosRule, ExpRule, ArctanRule)):
-        return (
-            f"\\text{{Direct integration: }} "
-            f"\\int {latex(rule.integrand)} \\, d{latex(rule.variable)}"
-        )
+        elif isinstance(rule, RewriteRule):
+            return (
+                f"\\text{{Rewrite }} {latex(rule.integrand)} = {latex(rule.rewritten)}"
+                + (" \\\\ " + renderSceneInstance.rule_to_latex(rule.substep) if rule.substep else "")
+            )
 
+        elif isinstance(rule, (SinRule, CosRule, ExpRule, ArctanRule)):
+            return (
+                f"\\text{{Direct integration: }} "
+                f"\\int {latex(rule.integrand)} \\, d{latex(rule.variable)}"
+            )
+
+        else:
+            return f"\\text{{Unhandled rule: }} {latex(rule.integrand)}"
+
+    def solveExpression(self, expression: str) -> list[str]:
+        renderSceneInstance = renderScene()
+        tex = expression
+        if r"\int" in tex:
+            operation = "integrate"
+        elif r"\frac{d" in tex or r"\partial" in tex:
+            operation = "differentiate"
+        else:
+            operation = "evaluate"
+        sympy = latex2sympy(tex)
+        if operation == "integrate":
+            steps = integral_steps(sympy.function, sympy.variables[0])
+            result = renderSceneInstance.rule_to_latex(steps)
+        debugging(steps)
+        debugging(result)
+        return result
+
+    def renderExpressions(self, latex_steps: list[list[str]]):
+        for step in latex_steps:
+            tex = MathTex(step)
+            tex.scale(1.2)
+            self.play(Write(tex))
+            self.wait(1)
+            self.play(FadeOut(tex)) 
+            
+
+def debugging(statement: str):
+    if os.path.exists('Log.txt'):
+        with open('Log.txt', 'a') as file:
+            file.write(f"{statement}")
+            file.write('\n')
     else:
-        # Fallback
-        return f"\\text{{Unhandled rule: }} {latex(rule.integrand)}"
-
-
-def solveExpression(expression: str) -> list[str]:
-    tex = expression
-    if r"\int" in tex:
-        operation = "integrate"
-    elif r"\frac{d" in tex or r"\partial" in tex:
-        operation = "differentiate"
-    else:
-        operation = "evaluate"
-    sympy = latex2sympy(tex)
-    if operation == "integrate":
-        steps = integral_steps(sympy.function, sympy.variables[0])
-        result = rule_to_latex(steps)
-    print(steps)
-    print(result)
-    return result
-
-def renderExpressions(renderArray: list[list[str]]):
-    return 
+        return
 
 def main():
+
+    renderSceneInstance = renderScene()
+
     parser = argparse.ArgumentParser(
         description="A package that solves calculus expressions and renders a video explanation alongside a geometric expression of what is happening."
     )
@@ -151,30 +171,32 @@ def main():
     args = parser.parse_args()
 
     if args.debug:
-        print("[DEBUG] Starting Script...")
-        print(f"[DEBUG] Parsed arguments: {args}")
+        with open('Log.txt', 'w') as file:
+            file.write("=========================\n\n     Log     Message\n\n=========================\n\n")
     
-    success, result = readExpressions(args.filename, args.number)
+    debugging("[DEBUG] Starting Script...")
+    debugging(f"[DEBUG] Parsed arguments: {args}")
+    
+    success, result = renderSceneInstance.readExpressions(args.filename, args.number)
 
-    if args.debug:
-        print(f"[DEBUG] Loaded {len(result)} expressions")
+    debugging(f"[DEBUG] Loaded {len(result)} expressions")
 
     renderArray = []
 
     if success:
         for expr in result:
-            print(f"Processing expression: {expr}")
-            renderArray.append(solveExpression(expr))
-        renderExpressions(renderArray)
+            debugging(f"Processing expression: {expr}")
+            renderArray.append(renderSceneInstance.solveExpression(expr))
+        renderSceneInstance.renderExpressions(renderArray)
     else:
-        print(result)
+        debugging(result)
         sys.exit(1)
 
     if args.output:
         print(f"Results will be written to {args.output}")
+        debugging(f"Results will be written to {args.output}")
 
-    if args.debug:
-        print("[DEBUG] Script finished.")
+    debugging("[DEBUG] Script finished.")
 
 
 
