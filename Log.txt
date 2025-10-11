@@ -5,24 +5,11 @@
 =========================
 
 [DEBUG] Starting Script...
-[DEBUG] Parsed arguments: Namespace(filename='equations.txt', output=None, debug=True, number=3)
-[DEBUG] Loaded 3 expressions
 Processing expression: \int{\frac{1}{1+x^2}}dx
 === RULE STRUCTURE ===
 ArctanRule: 1/(x**2 + 1)
 =====================
 Final LaTeX: \int \frac{1}{x^2 + 1} \, dx = \arctan(x) + C
-Processing expression: \int{x\cos{x}}dx
-=== RULE STRUCTURE ===
-PartsRule: x*cos(x)
-  Second step:
-  SinRule: sin(x)
-=====================
-Final LaTeX: \text{Integration by parts: } \int x \cos{\left(x \right)} \, dx = x \cdot \int \cos{\left(x \right)} \, dx - \int \left( \int \cos{\left(x \right)} \, dx \right) \, d(x)
-Processing expression: \int{x\log{x}}dx
-=== RULE STRUCTURE ===
-AlternativeRule: x*log(x, 10)
-=====================
-Final LaTeX: \text{U-substitution: } u = \log{\left(x \right)}, \quad \text{then } \text{Integration by parts: } \int u e^{2 u} \, du = u \cdot \int e^{2 u} \, du - \int \left( \int e^{2 u} \, du \right) \, d(u)
-Running command: manim main.py renderScene  --format=mp4
+Solution: \int \frac{1}{x^2 + 1} \, dx = \arctan(x) + C
+Running: uv run manim calculuscalculator/cli.py CalculusSolutionScene -o output.mp4
 [DEBUG] Script finished.

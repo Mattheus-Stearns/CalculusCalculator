@@ -103,10 +103,9 @@ wheels = [
 [[package]]
 name = "calculuscalculator"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "argparse" },
-    { name = "latex2sympy" },
     { name = "latex2sympy2" },
     { name = "manim" },
     { name = "sympy" },
@@ -115,7 +114,6 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "argparse", specifier = ">=1.4.0" },
-    { name = "latex2sympy", specifier = ">=1.0.3" },
     { name = "latex2sympy2", specifier = ">=1.9.1" },
     { name = "manim", specifier = ">=0.19.0" },
     { name = "sympy", specifier = ">=1.14.0" },
@@ -202,18 +200,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/da/cf/bd7e70bb7b8dfd77afdc79aba8d83afd4a9263f045861cd4ddd34b7f6a12/isosurfaces-0.1.2.tar.gz", hash = "sha256:fa51ebe864ea9355b26830e27fdd6a41d5a58b419fa8d4b47e3b8b80718d6e21", size = 11348, upload-time = "2024-02-26T00:20:52.066Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b1/68/d5e9e6e0d6e43107d8393d2ee3d231dbb597bf93052c6f3117b313724980/isosurfaces-0.1.2-py3-none-any.whl", hash = "sha256:525a49ba93f4dbc35303cd2faf30976af0f99d9274cfa2787aec016b8ef96c64", size = 11649, upload-time = "2024-02-26T00:20:41.308Z" },
-]
-
-[[package]]
-name = "latex2sympy"
-version = "1.0.3"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "sympy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/39/b0/d22ff2a72c7acafa7427a9df1d8bddc71e9f4d258173dea6ba494f046af0/latex2sympy-1.0.3.tar.gz", hash = "sha256:8ee9099f125c9ce438097ae5bc9527e09eeb48e62daff3d86262670c4fc65d95", size = 14501, upload-time = "2019-04-19T17:42:23.701Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/9f/f0/52246623d1406e1bcec2720afb01612251ec7c2a09e6993c1f07a47596ca/latex2sympy-1.0.3-py3-none-any.whl", hash = "sha256:38c2d9d652aa6d7fc20dbb6fb9219e338cd964657f3b7c8017664232466c7d78", size = 14817, upload-time = "2019-04-19T17:42:22.18Z" },
 ]
 
 [[package]]
