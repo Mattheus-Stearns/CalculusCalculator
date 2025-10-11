@@ -8,12 +8,21 @@
 [DEBUG] Parsed arguments: Namespace(filename='equations.txt', output=None, debug=True, number=3)
 [DEBUG] Loaded 3 expressions
 Processing expression: \int{\frac{1}{1+x^2}}dx
-ArctanRule(integrand=1/(x**2 + 1), variable=x, a=1, b=1, c=1)
-\text{Direct integration: } \int 1 \frac{1}{x^{2} + 1} \, dx
+=== RULE STRUCTURE ===
+ArctanRule: 1/(x**2 + 1)
+=====================
+Final LaTeX: \int \frac{1}{x^2 + 1} \, dx = \arctan(x) + C
 Processing expression: \int{x\cos{x}}dx
-PartsRule(integrand=x*cos(x), variable=x, u=x, dv=cos(x), v_step=CosRule(integrand=cos(x), variable=x), second_step=SinRule(integrand=sin(x), variable=x))
-\text{Integration by parts: } \int x \cos{\left(x \right)} \, dx = x \cdot (\cos{\left(x \right)}) - \int (\cos{\left(x \right)}) \, d(x) \\ \text{Direct integration: } \int \sin{\left(x \right)} \, dx
+=== RULE STRUCTURE ===
+PartsRule: x*cos(x)
+  Second step:
+  SinRule: sin(x)
+=====================
+Final LaTeX: \text{Integration by parts: } \int x \cos{\left(x \right)} \, dx = x \cdot \int \cos{\left(x \right)} \, dx - \int \left( \int \cos{\left(x \right)} \, dx \right) \, d(x)
 Processing expression: \int{x\log{x}}dx
-AlternativeRule(integrand=x*log(x, 10), variable=x, alternatives=[URule(integrand=x*log(x, 10), variable=x, u_var=_u, u_func=log(x, 10), substep=PartsRule(integrand=_u*exp(2*_u), variable=_u, u=_u, dv=exp(2*_u), v_step=AlternativeRule(integrand=exp(2*_u), variable=_u, alternatives=[URule(integrand=exp(2*_u), variable=_u, u_var=_u, u_func=2*_u, substep=ConstantTimesRule(integrand=exp(_u)/2, variable=_u, constant=1/2, other=exp(_u), substep=ExpRule(integrand=exp(_u), variable=_u, base=E, exp=_u))), URule(integrand=exp(2*_u), variable=_u, u_var=_u, u_func=exp(2*_u), substep=ConstantTimesRule(integrand=1/2, variable=_u, constant=1/2, other=1, substep=ConstantRule(integrand=1, variable=_u)))]), second_step=ConstantTimesRule(integrand=exp(2*_u)/2, variable=_u, constant=1/2, other=exp(2*_u), substep=AlternativeRule(integrand=exp(2*_u), variable=_u, alternatives=[URule(integrand=exp(2*_u), variable=_u, u_var=_u, u_func=2*_u, substep=ConstantTimesRule(integrand=exp(_u)/2, variable=_u, constant=1/2, other=exp(_u), substep=ExpRule(integrand=exp(_u), variable=_u, base=E, exp=_u))), URule(integrand=exp(2*_u), variable=_u, u_var=_u, u_func=exp(2*_u), substep=ConstantTimesRule(integrand=1/2, variable=_u, constant=1/2, other=1, substep=ConstantRule(integrand=1, variable=_u)))])))), PartsRule(integrand=x*log(x, 10), variable=x, u=log(x, 10), dv=x, v_step=PowerRule(integrand=x, variable=x, base=x, exp=1), second_step=ConstantTimesRule(integrand=x/2, variable=x, constant=1/2, other=x, substep=PowerRule(integrand=x, variable=x, base=x, exp=1)))])
-\text{Alternative methods: } \text{Substitute } u = \log{\left(x \right)}, \text{ then } du = d(\log{\left(x \right)}) \\ \text{Integration by parts: } \int u e^{2 u} \, du = u \cdot (e^{2 u}) - \int (e^{2 u}) \, d(u) \\ \text{Constant multiple rule: } \int \frac{1}{2}(e^{2 u}) \, du = \frac{1}{2} \int e^{2 u} \, du \\ \text{Alternative methods: } \text{Substitute } u = 2 u, \text{ then } du = d(2 u) \\ \text{Constant multiple rule: } \int \frac{1}{2}(e^{u}) \, du = \frac{1}{2} \int e^{u} \, du \\ \text{Direct integration: } \int e^{u} \, du \text{ or } \text{Substitute } u = e^{2 u}, \text{ then } du = d(e^{2 u}) \\ \text{Constant multiple rule: } \int \frac{1}{2}(1) \, du = \frac{1}{2} \int 1 \, du \\ \text{Unhandled rule: } 1 \text{ or } \text{Integration by parts: } \int x \log{\left(x \right)} \, dx = \log{\left(x \right)} \cdot (x) - \int (x) \, d(\log{\left(x \right)}) \\ \text{Constant multiple rule: } \int \frac{1}{2}(x) \, dx = \frac{1}{2} \int x \, dx \\ \text{Power rule: } \int x^1 \, dx = \frac{x^{2}}{2} + C
+=== RULE STRUCTURE ===
+AlternativeRule: x*log(x, 10)
+=====================
+Final LaTeX: \text{U-substitution: } u = \log{\left(x \right)}, \quad \text{then } \text{Integration by parts: } \int u e^{2 u} \, du = u \cdot \int e^{2 u} \, du - \int \left( \int e^{2 u} \, du \right) \, d(u)
+Running command: manim main.py renderScene  --format=mp4
 [DEBUG] Script finished.
