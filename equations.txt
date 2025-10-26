@@ -1,3 +1,2 @@
-\int{\frac{1}{1+x^2}}dx
 \int{x\cos{x}}dx
 \int{x\log{x}}dx

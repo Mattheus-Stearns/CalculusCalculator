@@ -5,11 +5,13 @@
 =========================
 
 [DEBUG] Starting Script...
-Processing expression: \int{\frac{1}{1+x^2}}dx
+Processing expression: \int{x\cos{x}}dx
 === RULE STRUCTURE ===
-ArctanRule: 1/(x**2 + 1)
+PartsRule: x*cos(x)
+  Second step:
+  SinRule: sin(x)
 =====================
-Final LaTeX: \int \frac{1}{x^2 + 1} \, dx = \arctan(x) + C
-Solution: \int \frac{1}{x^2 + 1} \, dx = \arctan(x) + C
+Final LaTeX: \text{Integration by parts: } \int x \cos{\left(x \right)} \, dx = x \cdot \int \cos{\left(x \right)} \, dx - \int \left( \int \cos{\left(x \right)} \, dx \right) \, d(x)
+Solution: \text{Integration by parts: } \int x \cos{\left(x \right)} \, dx = x \cdot \int \cos{\left(x \right)} \, dx - \int \left( \int \cos{\left(x \right)} \, dx \right) \, d(x)
 Running: uv run manim calculuscalculator/cli.py CalculusSolutionScene -o output.mp4
 [DEBUG] Script finished.
